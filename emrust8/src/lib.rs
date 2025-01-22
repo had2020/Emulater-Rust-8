@@ -9,9 +9,7 @@ pub struct Hardware {
     pub sound_register: u8,
     pub program_Counter_register: u16, // stores currently executing
     pub stack_pointer_register: u8,    // point to topmost level of stack
-                                       // TODO interpecter and The Stack
-                                       // arry of 16 return addresses (16-bit each
-                                       // connected to stack_pointer_register
+    pub stack_array_register: Vec<u16>, //connected to stack_pointer_register
 }
 
 // TODO display with minifb
@@ -31,12 +29,22 @@ impl Hardware {
 
         // 0x0000 - 0xFFFF, memory operations
         let index_register_: u16 = 0x0000;
+
+        // creating empty 16 stack_array_register
+        let mut stack_array_register_: Vec<u16> = Vec::new();
+        for byte in 0..16 {
+            stack_array_register_.push(0x0000);
+        }
+
         Hardware {
             memory: zeros,
             index_register: index_register_,
             general_registers: general_registers_,
+            delay_register: 0x00,
+            sound_register: 0x00,
+            program_Counter_register: 0x0000,
+            stack_pointer_register: 0x00,
+            stack_array_register: stack_array_register_,
         }
     }
 }
-
-// TODO 16 general purpose 8-bit registers
