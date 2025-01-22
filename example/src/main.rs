@@ -2,14 +2,14 @@ use emrust8::*;
 
 fn main() {
     let mut hardware = Hardware::new();
-    println!("{:?}", hardware.memory);
+    //println!("{:?}", hardware.memory); // debug print the memory
 
     //TODO maybe proc macro replacment?
-    while hardware.window.is_open() && !hardware.should_close {
+    while hardware.display_buffer.window.is_open() && !hardware.display_buffer.should_close {
+        let key = keyboard_to_string(&hardware);
+        println!("{}", key);
+
         // process here
-        hardware
-            .window
-            .update_with_buffer(&hardware.buffer, 640, 320)
-            .unwrap();
+        update_display_buffer(&mut hardware);
     }
 }

@@ -62,8 +62,8 @@ impl Hardware {
             stack_array_register_.push(0x0000);
         }
 
-        // window and display buffer
-        let (window_, buffer_) = defined_window(64, 32, "CHIP-8");
+        // window and display buffer, scaled verison of 64 and 32
+        let (window_, buffer_) = defined_window(640, 320, "CHIP-8");
 
         Hardware {
             memory: zeros,
@@ -74,7 +74,11 @@ impl Hardware {
             program_Counter_register: 0x0000,
             stack_pointer_register: 0x00,
             stack_array_register: stack_array_register_,
-            display_buffer: { window: window_, buffer_, },
+            display_buffer: display {
+                window: window_,
+                buffer: buffer_,
+                should_close: false,
+            },
         }
     }
 }
@@ -83,7 +87,45 @@ pub struct display {
     pub window: Window,
     pub buffer: Vec<u32>,
     pub should_close: bool,
-    pub scaled_height: u8,
-    pub scaled_width: u8,
-    pub scale_factor: u8,
+}
+
+// 6-key hexadecimal keypad:
+/*
+1	2	3	C
+4	5	6	D
+7	8	9	E
+A	0	B	F
+*/
+pub fn keyboard_to_string(hardware: &Hardware) -> String {
+    let mut key_pressed: &str = "";
+    if let Some(key) = hardware.display_buffer.window.get_keys().iter().next() {
+        match key {
+            Key::Key1 => key_pressed = "1",
+            Key::Key2 => key_pressed = "2",
+            Key::Key3 => key_pressed = "3",
+            Key::C => key_pressed = "C",
+            Key::Key4 => key_pressed = "4",
+            Key::Key5 => key_pressed = "5",
+            Key::Key6 => key_pressed = "6",
+            Key::D => key_pressed = "D",
+            Key::Key7 => key_pressed = "7",
+            Key::Key8 => key_pressed = "8",
+            Key::Key9 => key_pressed = "9",
+            Key::E => key_pressed = "E",
+            Key::A => key_pressed = "A",
+            Key::Key0 => key_pressed = "0",
+            Key::B => key_pressed = "B",
+            Key::F => key_pressed = "F",
+            _ => key_pressed = "",
+        }
+    }
+    key_pressed.to_string()
+}
+
+pub fn update_display_buffer(hardware: &mut Hardware) {
+    hardware
+        .display_buffer
+        .window
+        .update_with_buffer(&hardware.display_buffer.buffer, 640, 320)
+        .unwrap();
 }
