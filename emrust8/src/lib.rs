@@ -1,3 +1,28 @@
+use minifb::{Key, Window, WindowOptions};
+
+pub fn defined_window(width: usize, height: usize, name: &str) -> (Window, Vec<u32>) {
+    // initialize the pixel buffer
+    let buffer: Vec<u32> = vec![0; width * height];
+
+    // create a window
+    let window = Window::new(
+        name,
+        width,
+        height,
+        //windowOptions::default(),
+        WindowOptions {
+            resize: false,
+            borderless: false,
+            ..WindowOptions::default()
+        },
+    )
+    .unwrap_or_else(|e| {
+        panic!("Unable to open window: {}", e);
+    });
+
+    (window, buffer)
+}
+
 // virtual emulater based of the CHIP-8
 pub struct Hardware {
     pub memory: Vec<u8>, // each index is a byte in memory
@@ -10,6 +35,7 @@ pub struct Hardware {
     pub program_Counter_register: u16, // stores currently executing
     pub stack_pointer_register: u8,    // point to topmost level of stack
     pub stack_array_register: Vec<u16>, //connected to stack_pointer_register
+    pub display_buffer: display,
 }
 
 // TODO display with minifb
@@ -36,6 +62,9 @@ impl Hardware {
             stack_array_register_.push(0x0000);
         }
 
+        // window and display buffer
+        let (window_, buffer_) = defined_window(64, 32, "CHIP-8");
+
         Hardware {
             memory: zeros,
             index_register: index_register_,
@@ -45,6 +74,16 @@ impl Hardware {
             program_Counter_register: 0x0000,
             stack_pointer_register: 0x00,
             stack_array_register: stack_array_register_,
+            display_buffer: { window: window_, buffer_, },
         }
     }
+}
+
+pub struct display {
+    pub window: Window,
+    pub buffer: Vec<u32>,
+    pub should_close: bool,
+    pub scaled_height: u8,
+    pub scaled_width: u8,
+    pub scale_factor: u8,
 }

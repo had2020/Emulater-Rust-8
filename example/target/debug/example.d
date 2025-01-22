@@ -1,1 +1,1 @@
-/Users/hadrian/Developer/github_repos/Emulater-Rust-8/example/target/debug/example: /Users/hadrian/Developer/github_repos/Emulater-Rust-8/emrust8/src/lib.rs /Users/hadrian/Developer/github_repos/Emulater-Rust-8/example/src/main.rs
+/Users/hadrian/Developer/Github_Repos/Emulater-Rust-8/example/target/debug/example: /Users/hadrian/Developer/Github_Repos/Emulater-Rust-8/emrust8/src/lib.rs /Users/hadrian/Developer/Github_Repos/Emulater-Rust-8/example/src/main.rs
