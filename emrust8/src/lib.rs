@@ -122,6 +122,8 @@ pub fn keyboard_to_string(hardware: &Hardware) -> String {
     key_pressed.to_string()
 }
 
+//TODO sprite size of 8x15, for keyboard letters
+
 pub fn update_display_buffer(hardware: &mut Hardware) {
     hardware
         .display_buffer
