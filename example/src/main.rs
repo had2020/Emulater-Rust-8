@@ -9,7 +9,7 @@ fn main() {
         let key = keyboard_to_string(&hardware);
         //println!("{}", key);
 
-        decode(Opcode::ClearScreen);
+        //decode(&mut hardware, Opcode::ClearScreen);
 
         // process here
         update_display_buffer(&mut hardware);

@@ -33,7 +33,7 @@ pub struct Hardware {
     pub delay_register: u8,
     pub sound_register: u8,
     pub program_Counter_register: u16, // stores currently executing
-    pub stack_pointer_register: u8,    // point to topmost level of stack
+    pub stack_pointer_register: u8,    // point to topmost level of stack, one number/ byte
     pub stack_array_register: Vec<u16>, //connected to stack_pointer_register
     pub display_buffer: display,
 }
@@ -132,7 +132,6 @@ pub fn update_display_buffer(hardware: &mut Hardware) {
         .unwrap();
 }
 
-/*
 // TODO intruction set functions
 pub struct IntructionSet {
     pub set: Vec<String>,
@@ -145,14 +144,17 @@ pub fn CLS(hardware: &mut Hardware) {
     hardware.display_buffer.buffer.fill(0);
 }
 
-//Jump to a machine code routine at nnn.
-pub fn SYS(addr) {
-
-}
-
 // Return from a subroutine.
 pub fn RET() {}
-*/
+
+//Jump to a machine code routine at nnn.
+pub fn JP(hardware: &mut Hardware, addr: u16) {
+    hardware.program_Counter_register = addr;
+}
+
+pub fn CALL(hardware: &mut Hardware, addr: u16) {
+    hardware.stack_pointer_register += 1;
+}
 
 #[derive(Debug)]
 pub enum Opcode {
@@ -192,9 +194,13 @@ pub enum Opcode {
     LoadRegisters { register: u8 },                  // FX65
 }
 
-pub fn decode(opcode: Opcode) {
+/*
+pub fn decode(hardware: &mut Hardware, opcode: Opcode) {
     match opcode {
-        Opcode::ClearScreen => println!("clear"),
+        Opcode::ClearScreen => {
+            hardware.display_buffer.buffer.fill(0);
+        }
         _ => println!("ew"),
     }
 }
+*/
