@@ -191,3 +191,10 @@ pub enum Opcode {
     StoreRegisters { register: u8 },                 // FX55
     LoadRegisters { register: u8 },                  // FX65
 }
+
+pub fn decode(opcode: Opcode) {
+    match opcode {
+        Opcode::ClearScreen => println!("clear"),
+        _ => println!("ew"),
+    }
+}
