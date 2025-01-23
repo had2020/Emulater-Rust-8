@@ -132,14 +132,62 @@ pub fn update_display_buffer(hardware: &mut Hardware) {
         .unwrap();
 }
 
+/*
 // TODO intruction set functions
 pub struct IntructionSet {
     pub set: Vec<String>,
 }
 
-// Opcode Enum replacement?
+// TODO Opcode Enum replacement?
+
+// Clear the display.
 pub fn CLS(hardware: &mut Hardware) {
     hardware.display_buffer.buffer.fill(0);
 }
 
+//Jump to a machine code routine at nnn.
+pub fn SYS(addr) {
+
+}
+
+// Return from a subroutine.
 pub fn RET() {}
+*/
+
+#[derive(Debug)]
+pub enum Opcode {
+    ClearScreen,                                     // 00E0
+    Return,                                          // 00EE
+    Jump { address: u16 },                           // 1NNN
+    Call { address: u16 },                           // 2NNN
+    SkipEqual { register: u8, value: u8 },           // 3XNN
+    SkipNotEqual { register: u8, value: u8 },        // 4XNN
+    SkipRegEqual { reg_x: u8, reg_y: u8 },           // 5XY0
+    SetRegister { register: u8, value: u8 },         // 6XNN
+    AddToRegister { register: u8, value: u8 },       // 7XNN
+    SetRegisterToReg { reg_x: u8, reg_y: u8 },       // 8XY0
+    Or { reg_x: u8, reg_y: u8 },                     // 8XY1
+    And { reg_x: u8, reg_y: u8 },                    // 8XY2
+    Xor { reg_x: u8, reg_y: u8 },                    // 8XY3
+    AddRegisters { reg_x: u8, reg_y: u8 },           // 8XY4
+    SubRegisters { reg_x: u8, reg_y: u8 },           // 8XY5
+    ShiftRight { register: u8 },                     // 8XY6
+    SubN { reg_x: u8, reg_y: u8 },                   // 8XY7
+    ShiftLeft { register: u8 },                      // 8XYE
+    SkipNotRegEqual { reg_x: u8, reg_y: u8 },        // 9XY0
+    SetIndex { address: u16 },                       // ANNN
+    JumpWithOffset { address: u16 },                 // BNNN
+    Random { register: u8, mask: u8 },               // CXNN
+    DrawSprite { reg_x: u8, reg_y: u8, height: u8 }, // DXYN
+    SkipIfKeyPressed { register: u8 },               // EX9E
+    SkipIfKeyNotPressed { register: u8 },            // EXA1
+    GetDelayTimer { register: u8 },                  // FX07
+    WaitKeyPress { register: u8 },                   // FX0A
+    SetDelayTimer { register: u8 },                  // FX15
+    SetSoundTimer { register: u8 },                  // FX18
+    AddToIndex { register: u8 },                     // FX1E
+    SetIndexToSprite { register: u8 },               // FX29
+    StoreBCD { register: u8 },                       // FX33
+    StoreRegisters { register: u8 },                 // FX55
+    LoadRegisters { register: u8 },                  // FX65
+}
