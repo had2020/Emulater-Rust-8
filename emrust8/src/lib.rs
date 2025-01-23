@@ -154,6 +154,7 @@ pub fn JP(hardware: &mut Hardware, addr: u16) {
 
 pub fn CALL(hardware: &mut Hardware, addr: u16) {
     hardware.stack_pointer_register += 1;
+    //program_Counter_register = last stack index plus change
 }
 
 #[derive(Debug)]
