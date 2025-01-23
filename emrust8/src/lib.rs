@@ -131,3 +131,15 @@ pub fn update_display_buffer(hardware: &mut Hardware) {
         .update_with_buffer(&hardware.display_buffer.buffer, 640, 320)
         .unwrap();
 }
+
+// TODO intruction set functions
+pub struct IntructionSet {
+    pub set: Vec<String>,
+}
+
+// Opcode Enum replacement?
+pub fn CLS(hardware: &mut Hardware) {
+    hardware.display_buffer.buffer.fill(0);
+}
+
+pub fn RET() {}
