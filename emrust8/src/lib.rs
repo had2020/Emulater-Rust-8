@@ -327,6 +327,26 @@ pub fn DRW() {
     todo!()
 }
 
+// 	Skips the next instruction if the key with the value of Vx is pressed.
+pub fn SKP(hardware: &mut Hardware, key: &str) {
+    let pressed_key = keyboard_to_string(hardware); // check method for key &str
+    if pressed_key == key.to_string() {
+        hardware.program_Counter_register += 0x04;
+    } else {
+        hardware.program_Counter_register += 0x02;
+    }
+}
+
+// Skips the next instruction if the key with the value of Vx is not pressed.
+pub fn SKNP(hardware: &mut Hardware, key: &str) {
+    let pressed_key = keyboard_to_string(hardware); // check method for key &str
+    if pressed_key != key.to_string() {
+        hardware.program_Counter_register += 0x04;
+    } else {
+        hardware.program_Counter_register += 0x02;
+    }
+}
+
 //TODO
 #[derive(Debug)]
 pub enum Opcode {
