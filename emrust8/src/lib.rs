@@ -164,7 +164,7 @@ pub struct IntructionSet {
     pub set: Vec<String>,
 }
 
-// TODO Opcode Enum replacement?
+// BEGIN OF INSTRUCTION FUNCTIONS
 
 // Clear the display.
 pub fn CLS(hardware: &mut Hardware) {
@@ -406,9 +406,11 @@ pub fn SBCD(hardware: &mut Hardware, register_Index_num_Vx: usize) {
     let register_value: u8 = hardware.general_registers[register_Index_num_Vx];
     let float_value: f32 = register_value as f32;
 
-    let hundreds_digit
-    let tens_digit
-    let ones_digit
+    let hundreds_digit = get_hundreds_digit(float_value);
+    let tens_digit = get_tens_digit(float_value);
+    let ones_digit = get_ones_digit(float_value);
+
+    hardware.index_register = 1; // first place in memory
 }
 
 // 	Stores registers V0 through Vx in memory starting at address I.
@@ -416,6 +418,8 @@ pub fn SRS(hardware: &mut Hardware, register_Index_num_Vx: usize) {}
 
 // Reads values from memory starting at address I into registers V0 through Vx.
 pub fn LR(hardware: &mut Hardware, register_Index_num_Vx: usize) {}
+
+// END OF INSTRUCTION FUNCTIONS
 
 pub fn get_hundreds_digit(float: f32) -> Option<u8> {
     if !float.is_finite() {
@@ -435,7 +439,7 @@ pub fn get_tens_digit(float: f32) -> Option<u8> {
     }
 
     let abs_float = float.abs();
-    let scaled = abs_float * 100.0;
+    let scaled = abs_float * 10.0;
     let integer_part = scaled.trunc() as u8;
     let hundreds_digit = (integer_part % 10) as u8;
     Some(hundreds_digit)
@@ -447,7 +451,7 @@ pub fn get_ones_digit(float: f32) -> Option<u8> {
     }
 
     let abs_float = float.abs();
-    let scaled = abs_float * 100.0;
+    let scaled = abs_float * 1.0;
     let integer_part = scaled.trunc() as u8;
     let hundreds_digit = (integer_part % 10) as u8;
     Some(hundreds_digit)
