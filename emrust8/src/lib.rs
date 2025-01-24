@@ -29,10 +29,10 @@ pub struct Hardware {
 
     // registers
     pub index_register: u16,           // stores memeory operations
-    pub general_registers: Vec<u8>,    // each index is a register
+    pub general_registers: Vec<u8>,    // each index is a register, accessable for programs
     pub delay_register: u8,            // decressed every 60 hz
     pub sound_register: u8,            // TODO!
-    pub program_Counter_register: u16, // stores currently executing, just one address
+    pub program_Counter_register: u16, // stores currently executing, just one address jumps by twos aka 0x02
     pub stack_pointer_register: u8,    // point to topmost level of stack, one number/ byte
     pub stack_register: Vec<u16>,      //connected to stack_pointer_register, even jumps
     pub display_buffer: display,
@@ -71,9 +71,9 @@ impl Hardware {
             general_registers: general_registers_,
             delay_register: 0x00,
             sound_register: 0x00,
-            program_Counter_register: 0x0000,
+            program_Counter_register: 0x200, // fake allocation. Why not program_interater?
             stack_pointer_register: 0x00,
-            stack_array_register: stack_array_register_,
+            stack_register: stack_array_register_,
             display_buffer: display {
                 window: window_,
                 buffer: buffer_,
@@ -142,6 +142,7 @@ pub struct IntructionSet {
 // Clear the display.
 pub fn CLS(hardware: &mut Hardware) {
     hardware.display_buffer.buffer.fill(0);
+    hardware.program_Counter_register += 0x02;
 }
 
 // Return from a subroutine.
@@ -157,10 +158,90 @@ pub fn CALL(hardware: &mut Hardware, addr: u16) {
     hardware.program_Counter_register = addr; // pc set to nnn
     hardware.stack_register[hardware.stack_pointer_register as usize] =
         hardware.program_Counter_register;
-    //program_Counter_register = last stack index plus change?
+    //program_Counter_register = last stack index plus change? line 2 TODO remove this comment once tested
 }
 
-//TODO remove
+// basicly, compare if equal to jump 4 instead of 2
+pub fn SE(hardware: &mut Hardware, Vx: u8, KK: u8) {
+    if Vx == KK {
+        hardware.program_Counter_register += 0x04;
+    } else {
+        hardware.program_Counter_register += 0x02;
+    }
+}
+
+// not if
+pub fn SNE(hardware: &mut Hardware, Vx: u8, KK: u8) {
+    if Vx != KK {
+        hardware.program_Counter_register += 0x04;
+    } else {
+        hardware.program_Counter_register += 0x02;
+    }
+}
+
+// compares together both of the register's data
+pub fn SRE(hardware: &mut Hardware, Vx: u8, Vy: u8) {
+    if Vx == Vy {
+        hardware.program_Counter_register += 0x04;
+    } else {
+        hardware.program_Counter_register += 0x02;
+    }
+}
+
+// the interpreter puts the value kk into register index Vx
+pub fn SR(hardware: &mut Hardware, register_Index_num_Vx: usize, KK: u8) {
+    hardware.general_registers[register_Index_num_Vx] = KK;
+    hardware.program_Counter_register += 0x02;
+}
+
+// adds the value kk to the value of register Vx then stores the result in Vx
+pub fn ADD(hardware: &mut Hardware, register_Index_num_Vx: usize, KK: u8) {
+    hardware.general_registers[register_Index_num_Vx] += KK;
+    hardware.program_Counter_register += 0x02;
+}
+
+// stores the value of register Vy in register Vx
+pub fn SRTR(hardware: &mut Hardware, register_Index_num_Vx: usize, register_Index_num_Vy: usize) {
+    hardware.general_registers[register_Index_num_Vx] =
+        hardware.general_registers[register_Index_num_Vy];
+    hardware.program_Counter_register += 0x02;
+}
+
+// set Vx = Vx OR Vy, limted to registers
+pub fn OR(hardware: &mut Hardware, register_Index_num_Vx: usize, register_Index_num_Vy: usize) {
+    let first: u8 = hardware.general_registers[register_Index_num_Vx];
+    let second: u8 = hardware.general_registers[register_Index_num_Vy];
+
+    let mut first_inter: u8 = 0;
+    let mut second_inter: u8 = 0;
+
+    let mut current_first_byte: u8 = 0;
+    let mut current_second_byte: u8 = 0;
+
+    let mut or_sum: String = String::new();
+
+    for bit in 0..first {
+        first_inter += 1;
+        current_first_byte = bit;
+        for bitY in 0..second {
+            second_inter += 1;
+            current_second_byte = bitY;
+            // right number_place
+            if second_inter == first_inter {
+                if current_first_byte == 1 && current_second_byte == 1 {
+                    or_sum.push('1');
+                } else if current_first_byte == 1 && current_second_byte == 0 |  {
+
+                }
+            }
+        }
+    }
+
+    hardware.general_registers[register_Index_num_Vx] = or_sum;
+    hardware.program_Counter_register += 0x02;
+}
+
+//TODO
 #[derive(Debug)]
 pub enum Opcode {
     ClearScreen,                                     // 00E0
