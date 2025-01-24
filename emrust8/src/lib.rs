@@ -1,4 +1,5 @@
 use minifb::{Key, Window, WindowOptions};
+use rand::Rng; // for RND
 
 pub fn defined_window(width: usize, height: usize, name: &str) -> (Window, Vec<u32>) {
     // initialize the pixel buffer
@@ -71,7 +72,7 @@ impl Hardware {
             general_registers: general_registers_,
             delay_register: 0x00,
             sound_register: 0x00,
-            program_Counter_register: 0x200, // fake allocation. Why not program_interater?
+            program_Counter_register: 0x200, // fake allocation. Why not program_interater? Wait pointer?
             stack_pointer_register: 0x00,
             stack_register: stack_array_register_,
             display_buffer: display {
@@ -211,34 +212,119 @@ pub fn SRTR(hardware: &mut Hardware, register_Index_num_Vx: usize, register_Inde
 pub fn OR(hardware: &mut Hardware, register_Index_num_Vx: usize, register_Index_num_Vy: usize) {
     let first: u8 = hardware.general_registers[register_Index_num_Vx];
     let second: u8 = hardware.general_registers[register_Index_num_Vy];
+    let sum = first | second;
+    hardware.general_registers[register_Index_num_Vx] = sum;
+    hardware.program_Counter_register += 0x02;
+}
 
-    let mut first_inter: u8 = 0;
-    let mut second_inter: u8 = 0;
+// 	sets Vx = Vx AND Vy
+pub fn AND(hardware: &mut Hardware, register_Index_num_Vx: usize, register_Index_num_Vy: usize) {
+    let first: u8 = hardware.general_registers[register_Index_num_Vx];
+    let second: u8 = hardware.general_registers[register_Index_num_Vy];
+    let sum = first & second;
+    hardware.general_registers[register_Index_num_Vx] = sum;
+    hardware.program_Counter_register += 0x02;
+}
 
-    let mut current_first_byte: u8 = 0;
-    let mut current_second_byte: u8 = 0;
+// 	sets Vx = Vx XOR Vy
+pub fn XOR(hardware: &mut Hardware, register_Index_num_Vx: usize, register_Index_num_Vy: usize) {
+    let first: u8 = hardware.general_registers[register_Index_num_Vx];
+    let second: u8 = hardware.general_registers[register_Index_num_Vy];
+    let sum = first ^ second;
+    hardware.general_registers[register_Index_num_Vx] = sum;
+    hardware.program_Counter_register += 0x02;
+}
 
-    let mut or_sum: String = String::new();
-
-    for bit in 0..first {
-        first_inter += 1;
-        current_first_byte = bit;
-        for bitY in 0..second {
-            second_inter += 1;
-            current_second_byte = bitY;
-            // right number_place
-            if second_inter == first_inter {
-                if current_first_byte == 1 && current_second_byte == 1 {
-                    or_sum.push('1');
-                } else if current_first_byte == 1 && current_second_byte == 0 |  {
-
-                }
-            }
-        }
+// set Vx = Vx + Vy, set VF = carry
+pub fn SRB(hardware: &mut Hardware, register_Index_num_Vx: usize, register_Index_num_Vy: usize) {
+    let first: u8 = hardware.general_registers[register_Index_num_Vx];
+    let second: u8 = hardware.general_registers[register_Index_num_Vy];
+    let sum = first + second;
+    if sum as usize > 255 {
+        hardware.general_registers[15] = 1
+    } else {
+        hardware.general_registers[15] = 0;
     }
 
-    hardware.general_registers[register_Index_num_Vx] = or_sum;
     hardware.program_Counter_register += 0x02;
+}
+
+// subtracts Vy from Vx. Sets carry flag VF if there is no borrow
+pub fn SUR(hardware: &mut Hardware, register_Index_num_Vx: usize, register_Index_num_Vy: usize) {
+    let first: u8 = hardware.general_registers[register_Index_num_Vx];
+    let second: u8 = hardware.general_registers[register_Index_num_Vy];
+    if first > second {
+        hardware.general_registers[15] = 1 // 15, aka VF
+    } else {
+        hardware.general_registers[15] = 0; // no borrow
+    }
+
+    hardware.program_Counter_register += 0x02;
+}
+
+// shifts Vx right by one bit. Stores the least significant bit in VF
+pub fn SHR(hardware: &mut Hardware, register_Index_num_Vx: usize) {
+    let shift = hardware.general_registers[register_Index_num_Vx] >> 1;
+    hardware.general_registers[15] = shift;
+    hardware.program_Counter_register += 0x02;
+}
+
+// Set Vx = Vy - Vx, set VF = NOT borrow.
+pub fn SUBN(hardware: &mut Hardware, register_Index_num_Vx: usize, register_Index_num_Vy: usize) {
+    let first: u8 = hardware.general_registers[register_Index_num_Vx];
+    let second: u8 = hardware.general_registers[register_Index_num_Vy];
+    let mut sum: u8 = 0;
+    if first > second {
+        sum = first - second;
+    } else {
+        hardware.general_registers[15] = 0;
+    }
+    hardware.general_registers[register_Index_num_Vx] = sum;
+    hardware.program_Counter_register += 0x02;
+}
+
+// shifts Vx left by one bit. stores the most significant bit in VF
+pub fn SHL(hardware: &mut Hardware, register_Index_num_Vx: usize) {
+    let shift = hardware.general_registers[register_Index_num_Vx] << 1;
+    hardware.general_registers[15] = shift;
+    hardware.program_Counter_register += 0x02;
+}
+
+// skips the next instruction if Vx != Vy
+pub fn SNRE(hardware: &mut Hardware, register_Index_num_Vx: usize, register_Index_num_Vy: usize) {
+    let first: u8 = hardware.general_registers[register_Index_num_Vx];
+    let second: u8 = hardware.general_registers[register_Index_num_Vy];
+    if first == second {
+        hardware.program_Counter_register += 0x04;
+    } else {
+        hardware.program_Counter_register += 0x02;
+    }
+}
+
+// Sets I = NNN. (Loads address NNN into the index register I.)
+pub fn SI(hardware: &mut Hardware, addr: u8) {
+    hardware.index_register = addr as u16;
+}
+
+// 	Jumps to the address NNN + V0.
+pub fn JWO(hardware: &mut Hardware, addr: u8) {
+    let dir = hardware.general_registers[1] + addr; // aka V0 TODO possible error due to indexing from 0 or 1
+    hardware.program_Counter_register = dir as u16;
+}
+
+// 	Sets Vx = random byte AND NN.
+pub fn RND(hardware: &mut Hardware, register_Index_num_Vx: usize, NN: u8) {
+    let mut rng = rand::thread_rng();
+    let random_num: u8 = rng.gen();
+    hardware.general_registers[register_Index_num_Vx] = random_num + NN;
+}
+
+/*
+Dxyn - DRW Vx, Vy, nibble
+Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
+*/
+pub fn DRW() {
+    todo!()
 }
 
 //TODO
