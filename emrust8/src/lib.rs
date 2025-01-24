@@ -347,6 +347,17 @@ pub fn SKNP(hardware: &mut Hardware, key: &str) {
     }
 }
 
+// Sets Vx = delay timer.
+pub fn SDT(hardware: &mut Hardware, register_Index_num_Vx: usize) {
+    let current_delay = hardware.delay_register;
+    hardware.general_registers[register_Index_num_Vx] = current_delay;
+}
+
+// Waits for a key press and stores the result in Vx.
+pub fn WKP(hardware: &mut Hardware, register_Index_num_Vx: usize) {
+    let pressed_key = keyboard_to_string(hardware);
+}
+
 //TODO
 #[derive(Debug)]
 pub enum Opcode {
