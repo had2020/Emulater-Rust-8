@@ -411,6 +411,10 @@ pub fn SBCD(hardware: &mut Hardware, register_Index_num_Vx: usize) {
     let ones_digit = get_ones_digit(float_value);
 
     hardware.index_register = 1; // first place in memory
+
+    hardware.memory[index_register] = hundreds_digit;
+    hardware.memory[index_register + 1] = tens_digit;
+    hardware.memory[index_register + 3] = ones_digit;
 }
 
 // 	Stores registers V0 through Vx in memory starting at address I.
