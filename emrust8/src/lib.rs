@@ -29,10 +29,10 @@ pub struct Hardware {
     pub memory: Vec<u8>, // each index is a byte in memory
 
     // registers
-    pub index_register: u16,           // stores memeory operations
-    pub general_registers: Vec<u8>,    // each index is a register, accessable for programs
-    pub delay_register: u8,            // decressed every 60 hz
-    pub sound_register: u8,            // TODO!
+    pub index_register: u16,        // stores memeory operations single 16 bit
+    pub general_registers: Vec<u8>, // each index is a register, accessable for programs
+    pub delay_register: u8,         // decressed every 60 hz
+    pub sound_register: u8,         // TODO!
     pub program_Counter_register: u16, // stores currently executing, just one address jumps by twos aka 0x02
     pub stack_pointer_register: u8,    // point to topmost level of stack, one number/ byte
     pub stack_register: Vec<u16>,      //connected to stack_pointer_register, even jumps
@@ -55,7 +55,8 @@ impl Hardware {
         let mut general_registers_: Vec<u8> = Vec::new();
 
         // 0x0000 - 0xFFFF, memory operations
-        let index_register_: u16 = 0x0000;
+        //let index_register_: u16 = 0x0000;
+        let index_register_: usize = 0;
 
         // creating empty 16 stack_array_register
         let mut stack_array_register_: Vec<u16> = Vec::new();
@@ -216,6 +217,7 @@ pub fn SRE(hardware: &mut Hardware, Vx: u8, Vy: u8) {
 }
 
 // the interpreter puts the value kk into register index Vx
+// register_Index_num_Vx starts at 0 so max of Vx should be 15
 pub fn SR(hardware: &mut Hardware, register_Index_num_Vx: usize, KK: u8) {
     hardware.general_registers[register_Index_num_Vx] = KK;
     hardware.program_Counter_register += 0x02;
@@ -410,55 +412,76 @@ pub fn SBCD(hardware: &mut Hardware, register_Index_num_Vx: usize) {
     let tens_digit = get_tens_digit(float_value);
     let ones_digit = get_ones_digit(float_value);
 
-    hardware.index_register = 1; // first place in memory
+    let mut index_register_pointer = hardware.index_register; // first place in memory
 
-    hardware.memory[index_register] = hundreds_digit;
-    hardware.memory[index_register + 1] = tens_digit;
-    hardware.memory[index_register + 3] = ones_digit;
+    hardware.memory[index_register_pointer as usize] = hundreds_digit;
+    index_register_pointer += 1;
+    hardware.memory[index_register_pointer as usize] = tens_digit;
+    index_register_pointer += 1;
+    hardware.memory[index_register_pointer as usize] = ones_digit;
 }
 
 // 	Stores registers V0 through Vx in memory starting at address I.
-pub fn SRS(hardware: &mut Hardware, register_Index_num_Vx: usize) {}
+pub fn SRS(hardware: &mut Hardware, register_Index_num_Vx: usize, addr: u8) {
+    let mut loop_iter: usize = 0;
+    for register in hardware.general_registers.clone() {
+        if loop_iter == register_Index_num_Vx {
+            break;
+        }
+
+        hardware.memory[addr as usize + loop_iter] = register;
+
+        loop_iter += 1;
+    }
+}
 
 // Reads values from memory starting at address I into registers V0 through Vx.
-pub fn LR(hardware: &mut Hardware, register_Index_num_Vx: usize) {}
+pub fn LR(hardware: &mut Hardware, register_Index_num_Vx: usize, addr: u8) {
+    let mut loop_iter: usize = 0;
+    for register in hardware.general_registers.clone() {
+        hardware.general_registers[loop_iter] =
+            hardware.memory[addr as usize + register_Index_num_Vx];
+
+        loop_iter += 1;
+    }
+}
 
 // END OF INSTRUCTION FUNCTIONS
 
-pub fn get_hundreds_digit(float: f32) -> Option<u8> {
+pub fn get_hundreds_digit(float: f32) -> u8 {
     if !float.is_finite() {
-        return None;
+        return 0;
     }
 
     let abs_float = float.abs();
     let scaled = abs_float * 100.0;
     let integer_part = scaled.trunc() as u8;
     let hundreds_digit = (integer_part % 10) as u8;
-    Some(hundreds_digit)
+    hundreds_digit
 }
 
-pub fn get_tens_digit(float: f32) -> Option<u8> {
+pub fn get_tens_digit(float: f32) -> u8 {
     if !float.is_finite() {
-        return None;
+        return 0;
     }
 
     let abs_float = float.abs();
     let scaled = abs_float * 10.0;
     let integer_part = scaled.trunc() as u8;
     let hundreds_digit = (integer_part % 10) as u8;
-    Some(hundreds_digit)
+    hundreds_digit
 }
 
-pub fn get_ones_digit(float: f32) -> Option<u8> {
+pub fn get_ones_digit(float: f32) -> u8 {
     if !float.is_finite() {
-        return None;
+        return 0;
     }
 
     let abs_float = float.abs();
     let scaled = abs_float * 1.0;
     let integer_part = scaled.trunc() as u8;
     let hundreds_digit = (integer_part % 10) as u8;
-    Some(hundreds_digit)
+    hundreds_digit
 }
 
 //TODO
