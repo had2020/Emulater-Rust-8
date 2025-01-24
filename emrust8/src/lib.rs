@@ -28,13 +28,13 @@ pub struct Hardware {
     pub memory: Vec<u8>, // each index is a byte in memory
 
     // registers
-    pub index_register: u16,            // stores memeory operations
-    pub general_registers: Vec<u8>,     // each index is a register
-    pub delay_register: u8,             // decressed every 60 hz
-    pub sound_register: u8,             // TODO!
-    pub program_Counter_register: u16,  // stores currently executing, just one address
-    pub stack_pointer_register: u8,     // point to topmost level of stack, one number/ byte
-    pub stack_array_register: Vec<u16>, //connected to stack_pointer_register, even jumps
+    pub index_register: u16,           // stores memeory operations
+    pub general_registers: Vec<u8>,    // each index is a register
+    pub delay_register: u8,            // decressed every 60 hz
+    pub sound_register: u8,            // TODO!
+    pub program_Counter_register: u16, // stores currently executing, just one address
+    pub stack_pointer_register: u8,    // point to topmost level of stack, one number/ byte
+    pub stack_register: Vec<u16>,      //connected to stack_pointer_register, even jumps
     pub display_buffer: display,
 }
 
@@ -155,7 +155,8 @@ pub fn JP(hardware: &mut Hardware, addr: u16) {
 pub fn CALL(hardware: &mut Hardware, addr: u16) {
     hardware.stack_pointer_register += 1;
     hardware.program_Counter_register = addr; // pc set to nnn
-
+    hardware.stack_register[hardware.stack_pointer_register as usize] =
+        hardware.program_Counter_register;
     //program_Counter_register = last stack index plus change?
 }
 
