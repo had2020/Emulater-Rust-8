@@ -32,7 +32,7 @@ pub struct Hardware {
     pub index_register: u16,        // stores memeory operations single 16 bit
     pub general_registers: Vec<u8>, // each index is a register, accessable for programs
     pub delay_register: u8,         // decressed every 60 hz
-    pub sound_register: u8,         // TODO!
+    pub sound_register: u8,         // TODO
     pub program_Counter_register: u16, // stores currently executing, just one address jumps by twos aka 0x02
     pub stack_pointer_register: u8,    // point to topmost level of stack, one number/ byte
     pub stack_register: Vec<u16>,      //connected to stack_pointer_register, even jumps
@@ -56,7 +56,7 @@ impl Hardware {
 
         // 0x0000 - 0xFFFF, memory operations
         //let index_register_: u16 = 0x0000;
-        let index_register_: usize = 0;
+        let index_register_: u16 = 0;
 
         // creating empty 16 stack_array_register
         let mut stack_array_register_: Vec<u16> = Vec::new();
@@ -151,6 +151,15 @@ pub fn keyboard_to_hex(hardware: &Hardware) -> u8 {
 }
 
 //TODO sprite size of 8x15, for keyboard letters
+
+use std::{thread::sleep, time::Duration};
+pub fn decrement_delay(hardware: &mut Hardware) {
+    sleep(Duration::new(1, 0));
+    if hardware.delay_register < 1 {
+        hardware.delay_register -= 1;
+    } else {
+    }
+}
 
 pub fn update_display_buffer(hardware: &mut Hardware) {
     hardware
@@ -379,28 +388,40 @@ pub fn SKNP(hardware: &mut Hardware, key: &str) {
 pub fn SDT(hardware: &mut Hardware, register_Index_num_Vx: usize) {
     let current_delay = hardware.delay_register;
     hardware.general_registers[register_Index_num_Vx] = current_delay;
+    hardware.program_Counter_register += 0x02;
 }
 
 // Waits for a key press and stores the result in Vx.
 pub fn WKP(hardware: &mut Hardware, register_Index_num_Vx: usize) {
     let pressed_key = keyboard_to_hex(hardware);
     hardware.general_registers[register_Index_num_Vx] = pressed_key;
+    hardware.program_Counter_register += 0x02;
 }
+
+/*
+use rodio::source::{Samples, SineWave};
+use rodio::{OutputStream, Sink, Source};
+use std::time::Duration;
+*/
 
 // Sets the sound timer to Vx. TODO sound
 pub fn SST(hardware: &mut Hardware, register_Index_num_Vx: usize) {
     hardware.sound_register = hardware.general_registers[register_Index_num_Vx];
+    todo!();
+    hardware.program_Counter_register += 0x02;
 }
 
 // Adds Vx to I.
 pub fn ATI(hardware: &mut Hardware, register_Index_num_Vx: usize) {
     let first_register = hardware.general_registers[register_Index_num_Vx];
     hardware.index_register += first_register as u16;
+    hardware.program_Counter_register += 0x02;
 }
 
 // Sets I = location of sprite for digit Vx
 pub fn SITS(hardware: &mut Hardware) {
     todo!()
+    hardware.program_Counter_register += 0x02;
 }
 
 // Stores the binary-coded decimal representation of Vx in memory locations I, I+1, I+2.
@@ -419,6 +440,7 @@ pub fn SBCD(hardware: &mut Hardware, register_Index_num_Vx: usize) {
     hardware.memory[index_register_pointer as usize] = tens_digit;
     index_register_pointer += 1;
     hardware.memory[index_register_pointer as usize] = ones_digit;
+    hardware.program_Counter_register += 0x02;
 }
 
 // 	Stores registers V0 through Vx in memory starting at address I.
@@ -433,6 +455,7 @@ pub fn SRS(hardware: &mut Hardware, register_Index_num_Vx: usize, addr: u8) {
 
         loop_iter += 1;
     }
+    hardware.program_Counter_register += 0x02;
 }
 
 // Reads values from memory starting at address I into registers V0 through Vx.
@@ -444,6 +467,7 @@ pub fn LR(hardware: &mut Hardware, register_Index_num_Vx: usize, addr: u8) {
 
         loop_iter += 1;
     }
+    hardware.program_Counter_register += 0x02;
 }
 
 // END OF INSTRUCTION FUNCTIONS
