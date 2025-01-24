@@ -123,6 +123,32 @@ pub fn keyboard_to_string(hardware: &Hardware) -> String {
     key_pressed.to_string()
 }
 
+pub fn keyboard_to_hex(hardware: &Hardware) -> u8 {
+    let mut key_pressed: u8 = 0x0;
+    if let Some(key) = hardware.display_buffer.window.get_keys().iter().next() {
+        match key {
+            Key::Key1 => key_pressed = 0x1,
+            Key::Key2 => key_pressed = 0x2,
+            Key::Key3 => key_pressed = 0x3,
+            Key::C => key_pressed = 0xC,
+            Key::Key4 => key_pressed = 0x4,
+            Key::Key5 => key_pressed = 0x5,
+            Key::Key6 => key_pressed = 0x6,
+            Key::D => key_pressed = 0xD,
+            Key::Key7 => key_pressed = 0x7,
+            Key::Key8 => key_pressed = 0x8,
+            Key::Key9 => key_pressed = 0x9,
+            Key::E => key_pressed = 0xE,
+            Key::A => key_pressed = 0xA,
+            Key::Key0 => key_pressed = 0x0,
+            Key::B => key_pressed = 0xB,
+            Key::F => key_pressed = 0xF,
+            _ => key_pressed = 0x0,
+        }
+    }
+    key_pressed
+}
+
 //TODO sprite size of 8x15, for keyboard letters
 
 pub fn update_display_buffer(hardware: &mut Hardware) {
@@ -355,7 +381,76 @@ pub fn SDT(hardware: &mut Hardware, register_Index_num_Vx: usize) {
 
 // Waits for a key press and stores the result in Vx.
 pub fn WKP(hardware: &mut Hardware, register_Index_num_Vx: usize) {
-    let pressed_key = keyboard_to_string(hardware);
+    let pressed_key = keyboard_to_hex(hardware);
+    hardware.general_registers[register_Index_num_Vx] = pressed_key;
+}
+
+// Sets the sound timer to Vx. TODO sound
+pub fn SST(hardware: &mut Hardware, register_Index_num_Vx: usize) {
+    hardware.sound_register = hardware.general_registers[register_Index_num_Vx];
+}
+
+// Adds Vx to I.
+pub fn ATI(hardware: &mut Hardware, register_Index_num_Vx: usize) {
+    let first_register = hardware.general_registers[register_Index_num_Vx];
+    hardware.index_register += first_register as u16;
+}
+
+// Sets I = location of sprite for digit Vx
+pub fn SITS(hardware: &mut Hardware) {
+    todo!()
+}
+
+// Stores the binary-coded decimal representation of Vx in memory locations I, I+1, I+2.
+pub fn SBCD(hardware: &mut Hardware, register_Index_num_Vx: usize) {
+    let register_value: u8 = hardware.general_registers[register_Index_num_Vx];
+    let float_value: f32 = register_value as f32;
+
+    let hundreds_digit
+    let tens_digit
+    let ones_digit
+}
+
+// 	Stores registers V0 through Vx in memory starting at address I.
+pub fn SRS(hardware: &mut Hardware, register_Index_num_Vx: usize) {}
+
+// Reads values from memory starting at address I into registers V0 through Vx.
+pub fn LR(hardware: &mut Hardware, register_Index_num_Vx: usize) {}
+
+pub fn get_hundreds_digit(float: f32) -> Option<u8> {
+    if !float.is_finite() {
+        return None;
+    }
+
+    let abs_float = float.abs();
+    let scaled = abs_float * 100.0;
+    let integer_part = scaled.trunc() as u8;
+    let hundreds_digit = (integer_part % 10) as u8;
+    Some(hundreds_digit)
+}
+
+pub fn get_tens_digit(float: f32) -> Option<u8> {
+    if !float.is_finite() {
+        return None;
+    }
+
+    let abs_float = float.abs();
+    let scaled = abs_float * 100.0;
+    let integer_part = scaled.trunc() as u8;
+    let hundreds_digit = (integer_part % 10) as u8;
+    Some(hundreds_digit)
+}
+
+pub fn get_ones_digit(float: f32) -> Option<u8> {
+    if !float.is_finite() {
+        return None;
+    }
+
+    let abs_float = float.abs();
+    let scaled = abs_float * 100.0;
+    let integer_part = scaled.trunc() as u8;
+    let hundreds_digit = (integer_part % 10) as u8;
+    Some(hundreds_digit)
 }
 
 //TODO
