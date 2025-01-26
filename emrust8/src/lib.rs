@@ -45,7 +45,8 @@ impl Hardware {
         // creates 4 kilobytes, of 0x00 bytes
         let mut zeros: Vec<u8> = Vec::new();
         // 512 of the first bytes are reserved for the system
-        for byte in 0..4096 {
+        for byte in 0..10 {
+            //4096
             //TODO interpreter, and it's allocation
             // their are 4 kilobytes of memory
             zeros.push(0x00); // hexadecimal
@@ -53,6 +54,10 @@ impl Hardware {
 
         // 16, 8bit, going from V0-9 and VA-VF
         let mut general_registers_: Vec<u8> = Vec::new();
+
+        for register in 0..16 {
+            general_registers_.push(0x00)
+        }
 
         // 0x0000 - 0xFFFF, memory operations
         //let index_register_: u16 = 0x0000;
@@ -450,7 +455,7 @@ pub fn SBCD(hardware: &mut Hardware, register_Index_num_Vx: usize) {
 pub fn SRS(hardware: &mut Hardware, register_Index_num_Vx: usize, addr: u8) {
     let mut loop_iter: usize = 0;
     for register in hardware.general_registers.clone() {
-        if loop_iter == register_Index_num_Vx {
+        if loop_iter > register_Index_num_Vx {
             break;
         }
 
