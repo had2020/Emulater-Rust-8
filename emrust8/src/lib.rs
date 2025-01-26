@@ -341,6 +341,7 @@ pub fn SNRE(hardware: &mut Hardware, register_Index_num_Vx: usize, register_Inde
 // Sets I = NNN. (Loads address NNN into the index register I.)
 pub fn SI(hardware: &mut Hardware, addr: u8) {
     hardware.index_register = addr as u16;
+    hardware.program_Counter_register += 0x02;
 }
 
 // 	Jumps to the address NNN + V0.
@@ -354,14 +355,16 @@ pub fn RND(hardware: &mut Hardware, register_Index_num_Vx: usize, NN: u8) {
     let mut rng = rand::thread_rng();
     let random_num: u8 = rng.gen();
     hardware.general_registers[register_Index_num_Vx] = random_num + NN;
+    hardware.program_Counter_register += 0x02;
 }
 
 /*
 Dxyn - DRW Vx, Vy, nibble
 Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
 */
-pub fn DRW() {
-    todo!()
+pub fn DRW(hardware: &mut Hardware) {
+    todo!();
+    hardware.program_Counter_register += 0x02;
 }
 
 // 	Skips the next instruction if the key with the value of Vx is pressed.
@@ -420,7 +423,7 @@ pub fn ATI(hardware: &mut Hardware, register_Index_num_Vx: usize) {
 
 // Sets I = location of sprite for digit Vx
 pub fn SITS(hardware: &mut Hardware) {
-    todo!()
+    todo!();
     hardware.program_Counter_register += 0x02;
 }
 
