@@ -45,7 +45,7 @@ impl Hardware {
         // creates 4 kilobytes, of 0x00 bytes
         let mut zeros: Vec<u8> = Vec::new();
         // 512 of the first bytes are reserved for the system
-        for byte in 0..10 {
+        for byte in 0..4096 {
             //4096
             //TODO interpreter, and it's allocation
             // their are 4 kilobytes of memory
