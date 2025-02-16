@@ -1,6 +1,7 @@
 # Emulater Rust-8 aka emrust8
  A CHIP-8 virtual Computer emulater made in Rust
-TODO DOCs once near completion cycle
+
+This is a emulater made after the virutal CHIP-8 CPU, an 8bit processor. This eumulater does not fully emulate the whole fetch decode of the cpu. In simple terms the emulater has the same ram as the updated CHIP-8, and the same commands mapped to a load of functions that you can call in a similar way to CHIP-8 assembly. 
 
 # Keyboard
 |   |   |   |   |   |
